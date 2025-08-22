@@ -17,12 +17,12 @@ starts = '2017-01-01'
 ym_s = int(starts[:4] + starts[5:7])
 ys = int(starts[:4])
 # ---------------------------------- #
-cut_off = '2025-08-13'
+cut_off = '2025-08-22'
 ym_co = int(cut_off[:4] + cut_off[5:7])
 # ---------------------------------- #
 
 #Variables para mandar a escribir
-destiny = 'xlsx'  #xlsx or db
+destiny = 'parquet'  #xlsx or db
 table_name = 'bi_loan_tape_collections'  # El nombre de la tabla o de la hoja
 if_exists= 'replace' #Puede tomar los valores de fail’, ‘replace’, ‘append’
 

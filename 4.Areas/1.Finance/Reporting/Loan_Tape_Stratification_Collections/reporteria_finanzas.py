@@ -2113,16 +2113,28 @@ def loan_tape_stratification_collection(loan_tape_copy, final, year, destiny, ta
     ###########################################################################
     if destiny == 'xlsx':
         print('Generando el excel...')
-        period_index.to_excel(f'7. Loan Tape Stratification Collections {datetime.date.today()}_{geo}.xlsx')
-        
+        period_index.to_excel(
+            f'output/7. Loan Tape Stratification Collections {datetime.date.today()}_{geo}.xlsx',
+            index=False
+        )
+
+    elif destiny == 'parquet':
+        print('Generando el parquet...')
+        period_index.to_parquet(
+            f'output/7. Loan Tape Stratification Collections {datetime.date.today()}_{geo}.parquet',
+            index=False,
+            engine="pyarrow"  # más rápido y recomendado
+        )
+
     elif destiny == 'db':
         print('Cargando en la base de datos...')
         database_engine(geo, period_index, table_name, if_exists)
-        
+
     else:
         print('El dataframe sólo está en la memoria, no se ha guardado en ningún archivo externo.')
         print('Revise el parámetro destiny de la función')
-     
+
+    
     
     #Agrupamos por year month la recuperación de cada uno de los buckets que tenemos
     cols = ['AC Payment Amount', 'AC Principal', 'AC Origination Fee', 'AC Origination Fee VAT', 'AC Interest', 'AC Interest VAT',
