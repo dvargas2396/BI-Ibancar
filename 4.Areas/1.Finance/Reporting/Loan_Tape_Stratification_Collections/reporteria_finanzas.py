@@ -59,6 +59,36 @@ def database(geography):
     print(' ')
     return db
 
+
+
+# ========================================
+# AÑADIDO POR DAVID
+
+# Al inicio del archivo reporteria_finanzas.py, después de las importaciones
+from pathlib import Path
+
+# Función para obtener el directorio de output dinámicamente
+def get_output_directory():
+    """
+    Obtiene el directorio de output basado en la estructura del proyecto
+    """
+    try:
+        # Si se está ejecutando desde el directorio del proyecto
+        current_file = Path(__file__).parent if '__file__' in globals() else Path.cwd()
+        output_dir = current_file / "output"
+        
+        # Si no existe la carpeta output, la crea
+        output_dir.mkdir(exist_ok=True)
+        
+        return str(output_dir)
+    except:
+        # Fallback a la ruta original si hay algún error
+        return r'C:\Users\Bi_analyst\Desktop\Python'
+
+# ========================================
+
+
+
 def round_financial_inplace(df: pd.DataFrame, decimals: int = 2) -> None:
     """
     Redondea in-place todas las columnas numéricas de un DataFrame a 'decimals' cifras.
@@ -217,7 +247,12 @@ def principal(inicio, corte):
 
 def payoff(inicio, corte):
     #Nos posicionamos en la carpeta IUVO    
-    os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+    # os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+
+    # ========================================
+    # AÑADIDO POR DAVID
+    os.chdir(get_output_directory())
+    # ========================================
     
     #Traemos la conexión de la base de datos
     db = database(geo)   
@@ -326,7 +361,12 @@ def payoff(inicio, corte):
 
 def portfolio(year, fecha_corte):
     #Nos posicionamos en la carpeta IUVO    
-    os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+    # os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+
+    # ========================================
+    # AÑADIDO POR DAVID
+    os.chdir(get_output_directory())
+    # ========================================
     
     #Traemos la conexión de la base de datos
     db = database(geo)
@@ -425,7 +465,12 @@ def portfolio(year, fecha_corte):
         return df
         
     #Nos posicionasmos en la carpeta de IUVO
-    os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+    # os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+
+    # ========================================
+    # AÑADIDO POR DAVID
+    os.chdir(get_output_directory())
+    # ========================================
     
     print('Extraemos la información de los préstamos por mes')
     #Sacamos todas las fechasbanco de los usuarios y la info de sus cuotas
@@ -1149,7 +1194,12 @@ def vintage_pi(final, date, ym_date, inicio):
     db = database(geo)
     
     #Nos posicionamos en la carpeta IUVO    
-    os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')   
+    # os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')   
+
+    # ========================================
+    # AÑADIDO POR DAVID
+    os.chdir(get_output_directory())
+    # ========================================
     
     print('Iniciando la creación del reporte p2p Report')
     #Creamos el bloque de funciones que usaremos a lo largo de función principal 
@@ -1338,7 +1388,13 @@ def vintage_pi(final, date, ym_date, inicio):
 
 def loan_tape_stratification_collection(loan_tape_copy, final, year, destiny, table_name, if_exists):
     #Nos posicionamos en la carpeta IUVO    
-    os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+    # os.chdir(r'C:\Users\Bi_analyst\Desktop\Python')
+
+    # ========================================
+    # AÑADIDO POR DAVID
+    os.chdir(get_output_directory())
+    # ========================================
+
     aux_df = final.copy()
     df1 = loan_tape_copy.copy()
     
@@ -2158,7 +2214,7 @@ def loan_tape_stratification_collection(loan_tape_copy, final, year, destiny, ta
     
     cols1 = ['Amortized', 'Car_sale_revenue', 'Origination', 'Services', 'Interest', 'Full_Interest', 'VAT']
     comparacion_final = comparacion.groupby(['YM', 'date'])[cols1].sum().reset_index()
-    comparacion_final.to_excel('comparacion_mes_mes_maestra.xlsx', sheet_name= table_name)
+    # comparacion_final.to_excel('comparacion_mes_mes_maestra.xlsx', sheet_name= table_name)
     
     return period_index
     

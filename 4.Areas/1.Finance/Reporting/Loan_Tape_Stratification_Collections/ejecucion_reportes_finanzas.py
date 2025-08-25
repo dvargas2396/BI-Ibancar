@@ -1,54 +1,107 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Feb 23 08:39:33 2024
-@author: allan
+Ejecutor de Reportería Financiera - Loan Tape Stratification Collections
+Autor: allan
+Fecha: 2024-02-23
+Versión: 2.0
 """
-import sys
-from time import time
-tiempo_inicial = time() 
 
-sys.path.append(r'C:\Users\Bi_analyst\Desktop\Python')
+import os
+import sys
+from pathlib import Path
+from datetime import datetime
+from time import time
+
+# Configuración de rutas relativas
+current_dir = Path(__file__).parent
+project_root = current_dir.parents[4]  # Llega hasta BI-Ibancar
+output_dir = current_dir / "output"
+
+# Agregar el directorio actual al path para importar el módulo
+sys.path.append(str(current_dir))
 import reporteria_finanzas as rp
 
-#RECUERDA CAMBIAR EN EL MODULO reporteria_finanzas LA NOMENCLATURA MEX O ESP DEPENDE QUE GEOGRAFIA QUIERES CONCLUIR
+# =============================================================================
+# parámetros de configuración
+# =============================================================================
 
-#Variables para modificar las fechas del reporte debe ser menor o igual. Es decir, se ingresa el último día del mes
-starts = '2017-01-01'
-ym_s = int(starts[:4] + starts[5:7])
-ys = int(starts[:4])
-# ---------------------------------- #
-cut_off = '2025-08-22'
-ym_co = int(cut_off[:4] + cut_off[5:7])
-# ---------------------------------- #
+# Configuración de fechas
+fecha_inicio = '2017-01-01'
+fecha_corte = '2025-02-01'
+formato_salida = 'parquet'  # opciones: 'xlsx', 'parquet', 'db'
+nombre_tabla = 'bi_loan_tape_collections'
+modo_escritura = 'replace'  # opciones: 'fail', 'replace', 'append'
 
-#Variables para mandar a escribir
-destiny = 'parquet'  #xlsx or db
-table_name = 'bi_loan_tape_collections'  # El nombre de la tabla o de la hoja
-if_exists= 'replace' #Puede tomar los valores de fail’, ‘replace’, ‘append’
+# Configuración de procesos (True para ejecutar, False para omitir)
+ejecutar_procesos = {
+    'portfolio': True,
+    'payoff': False,
+    'vintage_pi': False,
+    'loan_tape_stratification': True,
+    'spv_report': False,
+    'loan_tape_full_installment': False
+}
 
-############################################################################
-print('___________________________portfolio___________________________')
-#Creacion Asign_stats, escogiendo la fecha de hasta donde queremos recrear el reporte
-final, loan_tape_copy = rp.portfolio(ys, cut_off)
+# =============================================================================
+# ejecución de procesos
+# =============================================================================
 
-print('___________________________payoff___________________________')
-# Creación de Payoff
-#rp.payoff(inicio= starts, corte=cut_off)
+def ejecutar_reportes():
+    """Función principal de ejecución de reportes"""
+    tiempo_inicial = time()
+    
+    print(f"Iniciando procesamiento: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Rango de fechas: {fecha_inicio} a {fecha_corte}")
+    print(f"Directorio de salida: {output_dir}")
+    print("="*70)
+    
+    # Variables derivadas
+    ym_s = int(fecha_inicio[:4] + fecha_inicio[5:7])
+    ys = int(fecha_inicio[:4])
+    ym_co = int(fecha_corte[:4] + fecha_corte[5:7])
+    
+    # Crear directorio de salida si no existe
+    output_dir.mkdir(exist_ok=True)
+    
+    # Variables para almacenar resultados
+    final = None
+    loan_tape_copy = None
+    period_index = None
+    
+    # Ejecutar procesos según configuración
+    if ejecutar_procesos['portfolio']:
+        print('___________________________portfolio___________________________')
+        final, loan_tape_copy = rp.portfolio(ys, fecha_corte)
+    
+    if ejecutar_procesos['payoff']:
+        print('___________________________payoff___________________________')
+        rp.payoff(inicio=fecha_inicio, corte=fecha_corte)
+    
+    if ejecutar_procesos['vintage_pi']:
+        print('___________________________vintage_pi___________________________')
+        rp.vintage_pi(final, fecha_corte, ym_co, ym_s)
+    
+    if ejecutar_procesos['loan_tape_stratification']:
+        print('________________loan_tape_stratification_collection________________')
+        period_index = rp.loan_tape_stratification_collection(
+            loan_tape_copy, final, ym_s, formato_salida, nombre_tabla, modo_escritura
+        )
+    
+    if ejecutar_procesos['spv_report']:
+        print('________________spv_report________________')
+        # spv_report = rp.spv_report(period_index)
+        pass
+    
+    if ejecutar_procesos['loan_tape_full_installment']:
+        print('________________loan_tape_full_installment________________')
+        # loan_tape_full_installment = rp.loan_tape_full_installment(period_index)
+        pass
+    
+    tiempo_final = time()
+    print("="*70)
+    print(f'Tiempo total de ejecución: {round((tiempo_final - tiempo_inicial)/60, 2)} minutos')
+    print(f"Procesamiento completado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-print('___________________________vintage_pi___________________________')
-#Creacion de Vintage P+I (Principal + Interest)
-#rp.vintage_pi(final, cut_off, ym_co, ym_s)
-
-print('________________loan_tape_stratification_collection________________')
-#Creacion de loan_tape_stratification_collection
-period_index = rp.loan_tape_stratification_collection(loan_tape_copy, final, ym_s, destiny, table_name, if_exists)
-
-print('________________SPV_REPORT________________')
-#Creacion de SPV Report
-#spv_report = Bozhidara.spv_report(period_index)
-
-print('________________Loan_Tape_Full_Installment________________')
-#Creacion de Loan Tape Full Installment Report
-#loan_tape_full_installment = rp.loan_tape_full_installment(period_index)
-
-print(f'El tiempo de ejecucion fue: {round((time() - tiempo_inicial)/60,1)} minutos' )
+# Ejecutar el script
+tiempo_inicial = time()
+ejecutar_reportes()
